@@ -1,0 +1,7 @@
+{
+  "label": "Module 1: The Robotic Nervous System",
+  "position": 1,
+  "collapsible": true,
+  "collapsed": false,
+  "description": "ROS 2 as the middleware connecting AI software with robot hardware in humanoid robotics"
+}
