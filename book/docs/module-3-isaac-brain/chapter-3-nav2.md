@@ -17,7 +17,7 @@ sidebar_position: 3
 This chapter assumes you have completed:
 
 - [Chapter 2 — Isaac ROS Perception](./chapter-2-isaac-ros.md) — cuVSLAM pose output on `/odom` that Nav2 consumes
-- [Module 1: Humanoid Robotics and ROS 2](../module-1-ros2-humanoid/index.md) — ROS 2 topics and the robot hardware stack
+- [Module 1: Humanoid Robotics and ROS 2](../module-1-ros2/index.md) — ROS 2 topics and the robot hardware stack
 
 :::
 
