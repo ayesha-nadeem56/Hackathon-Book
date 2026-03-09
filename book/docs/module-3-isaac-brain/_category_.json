@@ -1,0 +1,7 @@
+{
+  "label": "Module 3: The AI-Robot Brain",
+  "position": 3,
+  "collapsible": true,
+  "collapsed": false,
+  "description": "NVIDIA Isaac Sim, Isaac ROS perception, and Nav2 navigation for humanoid robots"
+}
