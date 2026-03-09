@@ -1,0 +1,7 @@
+{
+  "label": "Module 2: The Digital Twin",
+  "position": 2,
+  "collapsible": true,
+  "collapsed": false,
+  "description": "Build a digital twin of your humanoid robot using Gazebo physics simulation and Unity HRI environments"
+}

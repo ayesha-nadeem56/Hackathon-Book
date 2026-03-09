@@ -1,0 +1,7 @@
+{
+  "label": "Module 4: Vision-Language-Action",
+  "position": 4,
+  "collapsible": true,
+  "collapsed": false,
+  "description": "Voice commands, LLM planning, and autonomous action for humanoid robots"
+}
