@@ -12,7 +12,7 @@ const config = {
   },
 
   // GitHub Pages deployment config
-  url: 'https://hackathon-book-voxj-ptgkmls62-ayesha-nadeems-projects-862e44cf.vercel.app/',
+  url: 'https://hackathon-book-uogx.vercel.app/',
   baseUrl: "/",
   organizationName: 'ayesha-nadeem56',
   projectName: 'Hackathon-Book',
