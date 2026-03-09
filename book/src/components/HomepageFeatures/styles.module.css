@@ -1,11 +1,44 @@
+/**
+ * T008: Feature cards — book-specific styling
+ * T016: All colours use CSS variables for theme compatibility
+ * T019: Responsive grid reflow at tablet width
+ */
+
 .features {
   display: flex;
-  align-items: center;
-  padding: 2rem 0;
+  align-items: stretch;
+  padding: 3rem 0;
   width: 100%;
+  background: var(--ifm-background-surface-color);
 }
 
-.featureSvg {
-  height: 200px;
-  width: 200px;
+/* T008: Individual card — border-top accent + hover lift */
+.featureCard {
+  border-radius: 8px;
+  border-top: 4px solid var(--ifm-color-primary);
+  padding: 1.5rem 1.25rem;
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--ifm-card-background-color);
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* T008: Icon container */
+.featureIcon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  display: block;
+  text-align: center;
+}
+
+/* T019: Responsive — 3-col desktop, 2-col tablet, 1-col mobile */
+@media screen and (max-width: 996px) {
+  .features {
+    padding: 2rem 0;
+  }
 }

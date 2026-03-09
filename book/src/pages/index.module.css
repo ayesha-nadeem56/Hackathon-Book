@@ -1,23 +1,52 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * T005: Hero banner — gradient background, white text, increased padding
+ * Uses CSS variables so it responds to Infima theme changes automatically.
  */
 
 .heroBanner {
-  padding: 4rem 0;
+  padding: 5rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    var(--ifm-color-primary-darkest) 0%,
+    var(--ifm-color-primary) 100%
+  );
+  color: #fff;
+}
+
+/* T015: Title and subtitle always white on the gradient background */
+.heroBanner h1,
+.heroBanner p {
+  color: #fff;
 }
 
 @media screen and (max-width: 996px) {
   .heroBanner {
-    padding: 2rem;
+    padding: 3rem 1.5rem;
   }
 }
 
+/* T005: Dual CTA buttons row */
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+/* T015: Secondary "outline" button on gradient hero */
+.buttonOutline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  color: #fff !important;
+}
+
+.buttonOutline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #fff;
+  color: #fff !important;
 }

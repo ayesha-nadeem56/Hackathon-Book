@@ -83,7 +83,20 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'More',
+            title: 'Book',
+            items: [
+              {
+                label: 'All Chapters',
+                to: '/docs/module-1-ros2/',
+              },
+              {
+                label: 'Module 1 — ROS 2',
+                to: '/docs/module-1-ros2/',
+              },
+            ],
+          },
+          {
+            title: 'Project',
             items: [
               {
                 label: 'GitHub',
@@ -97,7 +110,7 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
-        additionalLanguages: ['python', 'bash'],
+        additionalLanguages: ['python', 'bash', 'yaml', 'docker'],
       },
     }),
 };

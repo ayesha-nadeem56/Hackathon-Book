@@ -2,48 +2,42 @@ import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 
+/**
+ * T007: Book-specific feature cards — replaced Docusaurus placeholder content.
+ * Icons use Unicode emoji as inline fallbacks (no SVG file dependencies).
+ */
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
-    description: (
-      <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
-      </>
-    ),
+    icon: '🤖',
+    title: 'ROS 2 & Physical AI',
+    description:
+      'From ROS 2 fundamentals to full humanoid robot pipelines — build, simulate, and deploy autonomous physical AI systems step by step.',
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
-    ),
+    icon: '💬',
+    title: 'AI-Powered RAG Chatbot',
+    description:
+      "Ask questions about any chapter using an embedded Retrieval-Augmented Generation chatbot grounded in the book's full content corpus.",
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
+    icon: '🧪',
+    title: 'Hands-On Code Examples',
+    description:
+      'Every concept is backed by reproducible Python code — version-pinned, tested, and annotated so you can follow along on your own hardware.',
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({icon, title, description}) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
+      <div className={styles.featureCard}>
+        <span className={styles.featureIcon} role="img" aria-label={title}>
+          {icon}
+        </span>
+        <div className="text--center padding-horiz--sm">
+          <Heading as="h3">{title}</Heading>
+          <p>{description}</p>
+        </div>
       </div>
     </div>
   );

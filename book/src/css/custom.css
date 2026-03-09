@@ -1,30 +1,86 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Docusaurus global CSS overrides — UI Upgrade 005
+ * Uses Infima CSS custom properties for full theme compatibility.
  */
 
-/* You can override the default Infima variables here. */
+/* ============================================================
+   LIGHT MODE — Electric Indigo palette
+   T002: Primary color scale + T010/T012/T013: Typography & code
+   ============================================================ */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* Primary indigo scale */
+  --ifm-color-primary: #4361ee;
+  --ifm-color-primary-dark: #3a56d4;
+  --ifm-color-primary-darker: #3451c8;
+  --ifm-color-primary-darkest: #2942a8;
+  --ifm-color-primary-light: #5370f2;
+  --ifm-color-primary-lighter: #5e7af4;
+  --ifm-color-primary-lightest: #7490f7;
+
+  /* T010: Typography — comfortable long-form reading */
+  --ifm-font-size-base: 16.5px;
+  --ifm-line-height-base: 1.75;
+  --ifm-heading-font-weight: 700;
+
+  /* T013: Code blocks */
+  --ifm-code-font-size: 90%;
+  --ifm-pre-background: #f6f8fa;
+  --docusaurus-highlighted-code-line-bg: rgba(67, 97, 238, 0.1);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* ============================================================
+   DARK MODE — Accessible indigo palette
+   T003: Dark mode primary scale + T013/T017: Code & sidebar
+   ============================================================ */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #7c8cf8;
+  --ifm-color-primary-dark: #6c7de6;
+  --ifm-color-primary-darker: #6377e0;
+  --ifm-color-primary-darkest: #4f63c8;
+  --ifm-color-primary-light: #8c9bfa;
+  --ifm-color-primary-lighter: #96a4fb;
+  --ifm-color-primary-lightest: #aab5fc;
+
+  /* T013 dark: Elevated code block background */
+  --ifm-pre-background: #1e2029;
+  --docusaurus-highlighted-code-line-bg: rgba(124, 140, 248, 0.15);
+
+  /* T017: Sidebar active text in dark mode */
+  --ifm-menu-color-active: var(--ifm-color-primary-lighter);
+}
+
+/* ============================================================
+   T011: Content max-width — prevent over-wide text on large screens
+   Caps the readable column to ~820px on desktop
+   ============================================================ */
+.theme-doc-markdown {
+  max-width: 820px;
+}
+
+/* ============================================================
+   T012: Heading hierarchy — H3/H4 slightly lighter weight than H1/H2
+   ============================================================ */
+.markdown h3,
+.markdown h4 {
+  font-weight: 600;
+}
+
+/* ============================================================
+   T014: Sidebar active indicator — left border accent
+   T017: Uses --ifm-color-primary (auto-switches with theme)
+   ============================================================ */
+.menu__link--active:not(.menu__link--sublist) {
+  border-left: 3px solid var(--ifm-color-primary);
+  padding-left: calc(var(--ifm-menu-link-padding-horizontal) - 3px);
+  font-weight: 600;
+}
+
+/* ============================================================
+   T018: Tablet responsive — remove content width cap below 1024px
+   to avoid sidebar + capped content causing layout overflow
+   ============================================================ */
+@media screen and (max-width: 1024px) {
+  .theme-doc-markdown {
+    max-width: 100%;
+  }
 }
