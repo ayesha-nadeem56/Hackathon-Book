@@ -13,12 +13,18 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# Python (for validation scripts)
+# Python
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 .venv/
 venv/
+*.egg-info/
+
+# uv / backend
+backend/.env
+backend/.venv/
 
 # OS
 .DS_Store
