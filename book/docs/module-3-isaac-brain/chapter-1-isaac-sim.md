@@ -16,7 +16,7 @@ sidebar_position: 1
 
 This chapter assumes you have completed:
 
-- [Module 1: Humanoid Robotics and ROS 2](../module-1-ros2-humanoid/index.md) — robot hardware and ROS 2 fundamentals
+- [Module 1: Humanoid Robotics and ROS 2](../module-1-ros2/index.md) — robot hardware and ROS 2 fundamentals
 - [Module 2: The Digital Twin](../module-2-digital-twin/index.md) — physics simulation and digital twin concepts
 
 :::
