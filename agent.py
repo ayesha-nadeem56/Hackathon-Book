@@ -9,12 +9,12 @@ Usage:
     cd backend && uv run python ../agent.py
 
 Environment variables (from backend/.env):
-    Required: OPENAI_API_KEY, QDRANT_URL, QDRANT_API_KEY,
+    Required: GROQ_API_KEY, QDRANT_URL, QDRANT_API_KEY,
               COLLECTION_NAME, COHERE_API_KEY
     Optional: COHERE_MODEL     (default: embed-english-v3.0)
               TOP_K            (default: 3)
               SCORE_THRESHOLD  (default: none)
-              AGENT_MODEL      (default: gpt-4o)
+              AGENT_MODEL      (default: llama-3.3-70b-versatile)
 
 Exit codes:
     0  normal exit (user typed quit or Ctrl-C)
@@ -295,6 +295,7 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
         model_provider=MultiProvider(
             openai_base_url="https://api.groq.com/openai/v1",
             openai_api_key=config["groq_api_key"],
+            openai_use_responses=False,
         )
     )
 
