@@ -41,8 +41,7 @@ _ENV_PATH = pathlib.Path(__file__).parent / "backend" / ".env"
 
 # Third-party
 import cohere
-from agents import Agent, Runner, function_tool, set_tracing_disabled, set_default_openai_client
-from openai import AsyncOpenAI
+from agents import Agent, MultiProvider, RunConfig, Runner, function_tool, set_tracing_disabled
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 
@@ -285,28 +284,28 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
             return f"Error retrieving passages: {exc}"
         return format_passages(results)
 
-    # OpenAI Agents SDK with Groq as LLM backend (OpenAI-compatible API)
-    os.environ.setdefault("OPENAI_API_KEY", "not-needed-using-groq")
-    set_default_openai_client(
-        AsyncOpenAI(
-            base_url="https://api.groq.com/openai/v1",
-            api_key=config["groq_api_key"],
-        )
-    )
-
-    return Agent(
+    agent = Agent(
         name="BookAgent",
         instructions=_GROUNDING_PROMPT,
         model=config["agent_model"],
         tools=[retrieve_book_content],
     )
 
+    run_config = RunConfig(
+        model_provider=MultiProvider(
+            openai_base_url="https://api.groq.com/openai/v1",
+            openai_api_key=config["groq_api_key"],
+        )
+    )
+
+    return agent, run_config
+
 
 # =============================================================================
 # T010 + T012 + T015 — REPL loop with multi-turn history and graceful exit
 # =============================================================================
 
-async def run_repl(agent: Agent) -> None:
+async def run_repl(agent: Agent, run_config: RunConfig) -> None:
     """
     Interactive REPL loop for the book Q&A agent.
 
@@ -342,7 +341,7 @@ async def run_repl(agent: Agent) -> None:
                 runner_input = history
 
             try:
-                result = await Runner.run(agent, runner_input)
+                result = await Runner.run(agent, runner_input, run_config=run_config)
             except Exception as exc:
                 print(f"\nERROR: Agent call failed: {exc}\n")
                 continue
@@ -373,8 +372,8 @@ def main() -> None:
     set_tracing_disabled(True)
     config = load_config()
     client = init_qdrant(config)
-    agent = build_agent(config, client)
-    asyncio.run(run_repl(agent))
+    agent, run_config = build_agent(config, client)
+    asyncio.run(run_repl(agent, run_config))
 
 
 if __name__ == "__main__":
