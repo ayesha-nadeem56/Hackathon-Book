@@ -23,6 +23,7 @@ Usage:
 # =============================================================================
 import math
 import os
+import pathlib
 import re
 import sys
 import uuid
@@ -30,6 +31,10 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from urllib.parse import urljoin, urlparse
+
+# Force UTF-8 output on Windows to handle emoji / special characters in book content
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import cohere
 import httpx
@@ -536,12 +541,13 @@ def test_retrieval(
         )
         query_vector = response.embeddings.float_[0]
 
-        results = client.search(
+        response_q = client.query_points(
             collection_name=cfg.collection_name,
-            query_vector=query_vector,
+            query=query_vector,
             limit=3,
             with_payload=True,
         )
+        results = response_q.points
 
         log("VERIFY", f'Query: "{query}"')
         if not results:
@@ -551,6 +557,77 @@ def test_retrieval(
             print(f"         {rank}. (score={r.score:.3f}) {r.payload.get('url', '')}")
             print(f'            "{snippet}..."')
         print()
+
+
+# =============================================================================
+# Local Markdown fallback — reads book/docs/ when live site pages are unavailable
+# =============================================================================
+
+_MD_STRIP = re.compile(
+    r"^---.*?---\s*",          # YAML front matter
+    re.DOTALL | re.MULTILINE,
+)
+_MD_CODE  = re.compile(r"```.*?```", re.DOTALL)
+_MD_INLINE = re.compile(r"`[^`]+`")
+_MD_LINK   = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
+_MD_HEADING = re.compile(r"^#{1,6}\s+", re.MULTILINE)
+_MD_HTML   = re.compile(r"<[^>]+>")
+
+
+def _md_to_text(md: str) -> str:
+    """Convert Markdown to plain text (best-effort, no external deps)."""
+    text = _MD_STRIP.sub("", md)
+    text = _MD_CODE.sub(" ", text)
+    text = _MD_INLINE.sub(" ", text)
+    text = _MD_LINK.sub(r"\1", text)
+    text = _MD_HEADING.sub("", text)
+    text = _MD_HTML.sub(" ", text)
+    return re.sub(r"\s{2,}", " ", text).strip()
+
+
+def _md_title(md: str, fallback: str) -> str:
+    """Extract title from YAML front matter or first heading."""
+    fm = re.search(r"^---\s*\ntitle:\s*[\"']?(.+?)[\"']?\s*\n", md, re.MULTILINE)
+    if fm:
+        return fm.group(1).strip()
+    h1 = re.search(r"^#\s+(.+)", md, re.MULTILINE)
+    if h1:
+        return h1.group(1).strip()
+    return fallback
+
+
+def load_local_docs(docs_dir: pathlib.Path, base_url: str) -> list[Page]:
+    """
+    Read all .md files under docs_dir and return Page objects.
+
+    Used as fallback when the deployed site returns 404 for content pages.
+    URLs are constructed as {base_url}/docs/{relative_path_without_extension}.
+    """
+    pages: list[Page] = []
+    for md_file in sorted(docs_dir.rglob("*.md")):
+        rel = md_file.relative_to(docs_dir)
+        # Build URL: drop .md suffix, convert path separators to /
+        url_path = str(rel.with_suffix("")).replace("\\", "/")
+        # Skip index/category files that don't have standalone pages
+        if url_path.endswith("index") or rel.name == "_category_.json":
+            continue
+        url = f"{base_url.rstrip('/')}/docs/{url_path}"
+        try:
+            raw = md_file.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        title = _md_title(raw, url_path)
+        text = _md_to_text(raw)
+        if not text:
+            continue
+        pages.append(Page(
+            url=url,
+            title=title,
+            text=text,
+            http_status=200,
+            crawled_at=datetime.now(timezone.utc),
+        ))
+    return pages
 
 
 # =============================================================================
@@ -597,8 +674,22 @@ def main() -> None:
     skipped = len(urls) - len(pages)
     log("FETCH", f"{len(pages)} fetched, {skipped} skipped")
 
+    # If the live site returned fewer than 3 content pages, fall back to local markdown.
+    # This handles Vercel deployment lag or routing issues with trailingSlash config.
+    if len(pages) < 3:
+        # Locate book/docs/ relative to this script (../book/docs from backend/)
+        script_dir = pathlib.Path(__file__).parent
+        docs_dir = (script_dir / ".." / "book" / "docs").resolve()
+        if docs_dir.exists():
+            log("FETCH", f"Fewer than 3 live pages — loading local docs from {docs_dir}")
+            pages = load_local_docs(docs_dir, cfg.base_url)
+            log("FETCH", f"{len(pages)} page(s) loaded from local markdown")
+        else:
+            log("ERROR ", f"Local docs not found at {docs_dir}. Exiting.")
+            sys.exit(1)
+
     if not pages:
-        log("ERROR ", "No pages fetched successfully. Exiting.")
+        log("ERROR ", "No pages available. Exiting.")
         sys.exit(1)
 
     # --- Stage 3: Chunking ---
