@@ -19,9 +19,10 @@ Environment (loaded from backend/.env via agent.py load_config):
 # =============================================================================
 # UTF-8 stdout fix (Windows cp1252 compatibility)
 # =============================================================================
+import io
 import sys
 
-if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # =============================================================================
