@@ -41,7 +41,7 @@ _ENV_PATH = pathlib.Path(__file__).parent / "backend" / ".env"
 
 # Third-party
 import cohere
-from agents import Agent, Runner, function_tool, set_default_openai_client, set_tracing_disabled
+from agents import Agent, Runner, function_tool, set_tracing_disabled, set_default_openai_client
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
@@ -285,13 +285,14 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
             return f"Error retrieving passages: {exc}"
         return format_passages(results)
 
-    # Point the SDK at Groq's OpenAI-compatible endpoint
+    # OpenAI Agents SDK with Groq as LLM backend (OpenAI-compatible API)
     os.environ.setdefault("OPENAI_API_KEY", "not-needed-using-groq")
-    groq_client = AsyncOpenAI(
-        base_url="https://api.groq.com/openai/v1",
-        api_key=config["groq_api_key"],
+    set_default_openai_client(
+        AsyncOpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key=config["groq_api_key"],
+        )
     )
-    set_default_openai_client(groq_client)
 
     return Agent(
         name="BookAgent",
