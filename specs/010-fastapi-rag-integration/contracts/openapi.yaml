@@ -1,0 +1,199 @@
+openapi: "3.1.0"
+info:
+  title: Book RAG API
+  version: "1.0.0"
+  description: >
+    FastAPI service that exposes the RAG book Q&A agent over HTTP.
+    The frontend chatbot sends questions here and receives grounded answers
+    sourced exclusively from the indexed book content.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /query:
+    post:
+      summary: Ask a question about the book
+      description: >
+        Accepts a natural-language question, invokes the RAG agent with vector
+        retrieval from Qdrant, and returns a grounded answer with source citations.
+        Each request is stateless — no session memory is maintained.
+      operationId: query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueryRequest"
+            examples:
+              basic:
+                summary: Simple book question
+                value:
+                  query: "What is ROS 2 and how does it differ from ROS 1?"
+      responses:
+        "200":
+          description: Grounded answer with source citations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryResponse"
+              examples:
+                answered:
+                  summary: Question matched book content
+                  value:
+                    answer: >
+                      ROS 2 is the second generation of the Robot Operating System.
+                      It introduces DDS-based communication, improved security, and
+                      real-time support compared to ROS 1. [Source: Module 1 — ROS 2 Fundamentals]
+                    sources:
+                      - url: "https://hackathon-book-uogx.vercel.app/docs/module-1-ros2/introduction"
+                        title: "Module 1 — ROS 2 Fundamentals"
+                no_content:
+                  summary: Question not covered in book
+                  value:
+                    answer: "I don't have relevant information in the book to answer that question."
+                    sources: []
+        "400":
+          description: Invalid request — query missing, empty, or too long
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                empty_query:
+                  value:
+                    error: "query must be a non-empty string"
+                too_long:
+                  value:
+                    error: "query exceeds maximum length of 2000 characters"
+        "503":
+          description: Dependency unavailable (Qdrant or AI service unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                qdrant_down:
+                  value:
+                    error: "Retrieval service unavailable. Please try again shortly."
+        "504":
+          description: Agent did not respond within the timeout window
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                timeout:
+                  value:
+                    error: "Agent response timed out. Please try again."
+
+  /health:
+    get:
+      summary: Service health check
+      description: >
+        Returns the readiness of the API server and its dependencies (Qdrant,
+        AI service). Use this for deployment verification and frontend graceful
+        degradation.
+      operationId: health
+      responses:
+        "200":
+          description: All dependencies healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+              examples:
+                healthy:
+                  value:
+                    status: "ok"
+                    dependencies:
+                      qdrant: "ok"
+                      agent: "ok"
+        "503":
+          description: One or more dependencies are unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+              examples:
+                degraded:
+                  value:
+                    status: "degraded"
+                    dependencies:
+                      qdrant: "unreachable"
+                      agent: "ok"
+
+components:
+  schemas:
+    QueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: The user's natural-language question about the book content
+          example: "What is a Vision-Language-Action model?"
+
+    QueryResponse:
+      type: object
+      required:
+        - answer
+        - sources
+      properties:
+        answer:
+          type: string
+          description: The agent's grounded response, based solely on retrieved book passages
+          example: "ROS 2 uses DDS for communication..."
+        sources:
+          type: array
+          description: Book passages retrieved and used to ground the answer
+          items:
+            $ref: "#/components/schemas/SourceReference"
+
+    SourceReference:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Absolute URL to the book page containing this passage
+          example: "https://hackathon-book-uogx.vercel.app/docs/module-1-ros2/introduction"
+        title:
+          type: string
+          description: Human-readable title of the source page
+          example: "Module 1 — ROS 2 Fundamentals"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable description of what went wrong
+          example: "query must be a non-empty string"
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+        - dependencies
+      properties:
+        status:
+          type: string
+          enum: ["ok", "degraded"]
+          description: Overall service readiness
+        dependencies:
+          type: object
+          description: Per-dependency health status
+          additionalProperties:
+            type: string
+          example:
+            qdrant: "ok"
+            agent: "ok"
