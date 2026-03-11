@@ -44,6 +44,22 @@ import cohere
 from agents import Agent, MultiProvider, RunConfig, Runner, function_tool, set_tracing_disabled
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
+from agent import OpenAIChatCompletionsModel  
+from openai import AsyncOpenAI
+
+ROUTER-API-KEY=="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"
+
+client= AsyncOpenAI(
+    api_key=ROUTER-API-KEY,
+    base_url="ttps://openrouter.ai/api/v1",
+)         
+
+third-party-model==OpenAIChatCompletionsModel(
+    openai_client=client,
+    model="arcee-ai/trinity-large-preview:free"
+)
+
+
 
 # =============================================================================
 # T009 — Grounding system prompt (FR-003, FR-006)
@@ -287,7 +303,7 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
     agent = Agent(
         name="BookAgent",
         instructions=_GROUNDING_PROMPT,
-        model=config["agent_model"],
+        model=third-party-model,
         tools=[retrieve_book_content],
     )
 
