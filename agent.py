@@ -9,12 +9,12 @@ Usage:
     cd backend && uv run python ../agent.py
 
 Environment variables (from backend/.env):
-    Required: GROQ_API_KEY, QDRANT_URL, QDRANT_API_KEY,
+    Required: OPENROUTER_API_KEY, QDRANT_URL, QDRANT_API_KEY,
               COLLECTION_NAME, COHERE_API_KEY
     Optional: COHERE_MODEL     (default: embed-english-v3.0)
               TOP_K            (default: 3)
               SCORE_THRESHOLD  (default: none)
-              AGENT_MODEL      (default: llama-3.3-70b-versatile)
+              AGENT_MODEL      (default: arcee-ai/trinity-large-preview:free)
 
 Exit codes:
     0  normal exit (user typed quit or Ctrl-C)
@@ -44,20 +44,6 @@ import cohere
 from agents import Agent, MultiProvider, RunConfig, Runner, function_tool, set_tracing_disabled
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from agent import OpenAIChatCompletionsModel  
-from openai import AsyncOpenAI
-
-ROUTER-API-KEY=="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"
-
-client= AsyncOpenAI(
-    api_key=ROUTER-API-KEY,
-    base_url="ttps://openrouter.ai/api/v1",
-)         
-
-third-party-model==OpenAIChatCompletionsModel(
-    openai_client=client,
-    model="arcee-ai/trinity-large-preview:free"
-)
 
 
 
@@ -92,7 +78,7 @@ def load_config() -> dict:
 
     Exits with code 1 on any missing required key or invalid optional value.
     """
-    load_dotenv(_ENV_PATH)
+    load_dotenv(_ENV_PATH, override=True)
 
     required_keys = [
         "GROQ_API_KEY",
@@ -278,7 +264,7 @@ def format_passages(results: list) -> str:
 # T008 + T009 — Agent construction with @function_tool and grounding prompt
 # =============================================================================
 
-def build_agent(config: dict, client: QdrantClient) -> Agent:
+def build_agent(config: dict, client: QdrantClient) -> tuple[Agent, RunConfig]:
     """
     Build the BookAgent with a retrieval tool and strict grounding instructions.
 
@@ -303,7 +289,7 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
     agent = Agent(
         name="BookAgent",
         instructions=_GROUNDING_PROMPT,
-        model=third-party-model,
+        model=config["agent_model"],
         tools=[retrieve_book_content],
     )
 
@@ -316,6 +302,20 @@ def build_agent(config: dict, client: QdrantClient) -> Agent:
     )
 
     return agent, run_config
+
+
+# =============================================================================
+# run_once — single-query interface for api.py (HTTP use case)
+# =============================================================================
+
+async def run_once(agent: Agent, run_config: RunConfig, query: str):
+    """
+    Run the agent for a single stateless query and return the result.
+
+    Used by backend/api.py to handle HTTP requests without a REPL loop.
+    Each call is independent — no session history is maintained.
+    """
+    return await Runner.run(agent, query, run_config=run_config)
 
 
 # =============================================================================
